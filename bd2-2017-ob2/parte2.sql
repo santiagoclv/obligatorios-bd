@@ -9,11 +9,27 @@ Nombre Función: balance_clientes  Parámetros:  Entrada:  fecha (timestamp)
 Acción Recorre la tabla clientes y para cada uno de ellos invoca la función balance_cliente.
 Por cada invocación inserta una tupla en la tabla balances con el cliente (id_cliente), la fecha de cálculo (fecha) y el saldo calculado.  
 
-CREATE TABLE balances {
+CREATE TABLE balances (
 	id_cliente integer,
 	fecha_calculo timestamp,
 	saldo numeric
-};
+);
+
+
+CREATE or replace FUNCTION spu_EstaEnNumerosRojos(numCuenta varchar(20))
+	RETURNS numeric AS $SALDO$
+	BEGIN
+		IF (SELECT state FROM expedientes
+		WHERE code = numCuenta) = '4' then
+		
+			RETURN 1;
+		
+		ELSE
+			RETURN 0;
+		END IF;
+	END;	
+	$SALDO$
+	Language 'plpgsql';
 
 CREATE OR REPLACE FUNCTION balance_cliente(integer, timestamp) RETURNS numeric AS $$
 DECLARE
