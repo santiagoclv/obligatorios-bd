@@ -9,11 +9,11 @@
 -- Acción Recorre la tabla clientes y para cada uno de ellos invoca la función balance_cliente.
 -- Por cada invocación inserta una tupla en la tabla balances con el cliente (id_cliente), la fecha de cálculo (fecha) y el saldo calculado.  
 
-CREATE TABLE balances {
+CREATE TABLE balances (
 	id_cliente integer,
 	fecha_calculo timestamp,
 	saldo numeric
-};
+);
 
 CREATE OR REPLACE FUNCTION balance_cliente(integer, timestamp) RETURNS numeric AS $$
 DECLARE
@@ -21,7 +21,7 @@ DECLARE
  rec_cliente RECORD;
  cur_cliente CURSOR(cliente_id integer, fecha timestamp) 
  FOR SELECT 
- FROM film
+ FROM alquileres
  WHERE release_year = p_year;
 BEGIN
  resultado := (numero1 * numero2) + 100;
