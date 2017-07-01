@@ -15,64 +15,49 @@ CREATE TABLE balances (
 	saldo numeric
 );
 
-CREATE OR REPLACE FUNCTION balance_cliente(integer, timestamp) RETURNS numeric AS $$
+
+
+CREATE OR REPLACE FUNCTION balance_cliente( client integer, fecha_alq timestamp with time zone) RETURNS TEXT AS $$
 DECLARE
- resultado numeric;
+ resultado TEXT DEFAULT '';
  rec_cliente RECORD;
- cur_cliente CURSOR(cliente_id integer, fecha timestamp) 
- FOR SELECT 
+ cur_cliente CURSOR(cliente_id integer, fecha_alq timestamp) 
+ FOR SELECT *
  FROM alquileres
- WHERE release_year = p_year;
+ WHERE "idCliente" = cliente_id AND 
+ fecha <= fecha_alq;
 BEGIN
- resultado := (numero1 * numero2) + 100;
-
- RETURN resultado;
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION get_film_titles(p_year INTEGER)
-   RETURNS text AS $$
-DECLARE 
- titles TEXT DEFAULT '';
- rec_film   RECORD;
- cur_films CURSOR(p_year INTEGER) 
- FOR SELECT 
- FROM film
- WHERE release_year = p_year;
-BEGIN
-   -- Open the cursor
-   OPEN cur_films(p_year);
- 
+   OPEN cur_cliente(client, fecha_alq);
    LOOP
-    -- fetch row into the film
-      FETCH cur_films INTO rec_film;
-    -- exit when no more row to fetch
+      FETCH cur_cliente INTO rec_cliente;
       EXIT WHEN NOT FOUND;
- 
-    -- build the output
-      IF rec_film.title LIKE '%ful%' THEN 
-         titles := titles || ',' || rec_film.title || ':' || rec_film.release_year;
+      
+      IF rec_cliente."idPelicula" > 1 THEN 
+         resultado := resultado || ',' || rec_cliente."idPelicula" || ':' || rec_cliente.fecha;
       END IF;
    END LOOP;
-  
-   -- Close the cursor
-   CLOSE cur_films;
+   
+   CLOSE cur_cliente;
  
-   RETURN titles;
-END; $$
- 
-LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION balance_clientes(timestamp) RETURNS numeric AS $$
-DECLARE
- id_cliente ALIAS FOR $1;
- fecha ALIAS FOR $2;
- resultado numeric;
-BEGIN
- resultado := (numero1 * numero2) + 100;
-
- RETURN resultado;
+   RETURN resultado;
 END;
 $$ LANGUAGE plpgsql;
+
+
+SELECT c."idCliente", c.nombre, c.apellido
+FROM clientes c
+LEFT JOIN alquileres a
+ON a."idCliente" = c."idCliente" 
+	AND a."idPelicula" in  (SELECT i."idPelicula"
+    					   FROM inventario i
+    					   INNER JOIN sucursales s
+    						ON i."idSucursal" = s."idSucursal"
+    						WHERE s."idCiudad" = c."idCiudad")
+WHERE a."idPelicula" IS NOT null
+GROUP BY c."idCliente", c.nombre, c.apellido
+HAVING count(*) = (SELECT COUNT(cant.*) FROM (SELECT ii."idPelicula"
+    									FROM inventario ii
+    									INNER JOIN sucursales ss
+    									ON ii."idSucursal" = ss."idSucursal"
+    									WHERE ss."idCiudad" = c."idCiudad"
+    									GROUP BY ii."idPelicula") cant);
