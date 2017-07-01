@@ -28,16 +28,3 @@ $tot_peliculas_borrar$ LANGUAGE plpgsql;
 CREATE TRIGGER tot_peliculas_borrar AFTER INSERT 
     ON "idiomasDePeliculas" FOR EACH ROW 
     EXECUTE PROCEDURE tot_peliculas_borrar();
-
-
-INSERT INTO peliculas (titulo, descripcion, anio, "idIdiomaOriginal", "duracionAlquiler", "costoAlquiler", duracion, "costoReemplazo", clasificacion, "contenidosExtra")
- VALUES ('CLONES PINOCCHIO', 'A Amazing Drama of a Car And a Robot who must Pursue a Dentist in New Orleans', 2006, 1, 6, 59.80, 124, 339.80, 'R', '{"Behind the Scenes"}');
-
-select * from inconsist_tot_pel;
-id_alerta, id_pelicula
-1;1001
-
-INSERT INTO "idiomasDePeliculas" ("idIdioma", "idPelicula") VALUES (1, 1001);
-select * from inconsist_tot_pel;
-id_alerta, id_pelicula
--;-
